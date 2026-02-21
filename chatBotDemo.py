@@ -12,281 +12,211 @@ from langchain_community.vectorstores import FAISS
 # PAGE CONFIG
 # ----------------------------
 st.set_page_config(
-    page_title=" C++ Chatbot",
-    page_icon="👑",
-    layout="centered",
+    page_title="C++ Nexus AI",
+    page_icon="🤖",
+    layout="wide", # Wider layout for a modern feel
     initial_sidebar_state="expanded",
 )
 
 # ----------------------------
-# ROYAL THEME (CSS)
+# CYBER-MODERN THEME (CSS)
 # ----------------------------
 st.markdown(
     """
 <style>
-/* --- Royal palette --- */
-:root{
-  --bg1:#05060A;
-  --bg2:#0B0E18;
-  --card:#0F1426;
-  --card2:#101A33;
-  --gold:#D4AF37;
-  --gold2:#F5D97A;
-  --text:#EAF0FF;
-  --muted:#AAB4D6;
-  --border:rgba(212,175,55,.25);
-  --shadow: 0 18px 60px rgba(0,0,0,.55);
-}
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
 
-/* Whole app background */
-.stApp{
-  background: radial-gradient(1200px 600px at 20% 10%, rgba(212,175,55,.18), transparent 55%),
-              radial-gradient(900px 500px at 80% 20%, rgba(130,90,255,.18), transparent 60%),
-              linear-gradient(180deg, var(--bg1), var(--bg2));
-  color: var(--text);
-}
+    :root {
+        --primary: #00f2fe;
+        --secondary: #4facfe;
+        --bg-dark: #0a0b10;
+        --glass: rgba(255, 255, 255, 0.03);
+        --glass-border: rgba(255, 255, 255, 0.1);
+        --text-main: #e0e6ed;
+    }
 
-/* Remove top padding a bit */
-.block-container{
-  padding-top: 2.0rem !important;
-  max-width: 860px;
-}
+    /* Background and Font */
+    .stApp {
+        background: radial-gradient(circle at 50% -20%, #1e2a4a, #0a0b10);
+        font-family: 'Inter', sans-serif;
+        color: var(--text-main);
+    }
 
-/* Title styling */
-.royal-title{
-  font-size: 2.35rem;
-  font-weight: 800;
-  letter-spacing: .5px;
-  margin-bottom: .2rem;
-  background: linear-gradient(90deg, var(--gold2), var(--gold));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
+    /* Sidebar Styling */
+    section[data-testid="stSidebar"] {
+        background-color: rgba(10, 11, 16, 0.95) !important;
+        border-right: 1px solid var(--glass-border);
+    }
 
-.royal-subtitle{
-  color: var(--muted);
-  font-size: 1.02rem;
-  margin-bottom: 1.2rem;
-}
+    /* Main Container Padding */
+    .block-container {
+        padding-top: 2rem !important;
+        max-width: 1000px;
+    }
 
-/* Card wrapper */
-.royal-card{
-  background: linear-gradient(180deg, rgba(15,20,38,.92), rgba(16,26,51,.78));
-  border: 1px solid var(--border);
-  border-radius: 18px;
-  padding: 18px 18px 10px 18px;
-  box-shadow: var(--shadow);
-}
+    /* Glass Cards */
+    .nexus-card {
+        background: var(--glass);
+        backdrop-filter: blur(12px);
+        border: 1px solid var(--glass-border);
+        border-radius: 20px;
+        padding: 25px;
+        margin-bottom: 20px;
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8);
+    }
 
-/* Thin golden divider */
-.royal-divider{
-  height: 1px;
-  width: 100%;
-  margin: 12px 0 14px 0;
-  background: linear-gradient(90deg, transparent, rgba(212,175,55,.65), transparent);
-}
+    /* Gradient Title */
+    .nexus-title {
+        font-size: 3rem;
+        font-weight: 800;
+        background: linear-gradient(to right, #00f2fe, #4facfe);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 0.5rem;
+    }
 
-/* Chat bubbles */
-[data-testid="stChatMessage"]{
-  background: transparent !important;
-  border: none !important;
-  padding: 0.35rem 0 !important;
-}
+    /* Chat Messages */
+    [data-testid="stChatMessage"] {
+        border-radius: 15px;
+        margin-bottom: 15px;
+        background: rgba(255, 255, 255, 0.03) !important;
+        border: 1px solid var(--glass-border) !important;
+    }
 
-[data-testid="stChatMessage"] > div{
-  background: linear-gradient(180deg, rgba(15,20,38,.85), rgba(16,26,51,.70));
-  border: 1px solid rgba(212,175,55,.20);
-  border-radius: 16px;
-  padding: 14px 14px;
-  box-shadow: 0 10px 35px rgba(0,0,0,.35);
-}
+    /* Status Indicator */
+    .status-tag {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 50px;
+        background: rgba(0, 242, 254, 0.1);
+        color: #00f2fe;
+        font-size: 0.8rem;
+        font-weight: 600;
+        border: 1px solid rgba(0, 242, 254, 0.3);
+        margin-bottom: 10px;
+    }
 
-/* Different accents for user vs assistant */
-[data-testid="stChatMessage"][aria-label="chat message user"] > div{
-  border: 1px solid rgba(212,175,55,.35);
-}
-
-[data-testid="stChatMessage"][aria-label="chat message assistant"] > div{
-  border: 1px solid rgba(130,90,255,.25);
-}
-
-/* Chat input styling */
-[data-testid="stChatInput"]{
-  background: transparent;
-}
-
-[data-testid="stChatInput"] textarea{
-  background: rgba(15,20,38,.85) !important;
-  border: 1px solid rgba(212,175,55,.30) !important;
-  border-radius: 16px !important;
-  color: var(--text) !important;
-  box-shadow: 0 10px 35px rgba(0,0,0,.35) !important;
-}
-
-[data-testid="stChatInput"] textarea:focus{
-  border: 1px solid rgba(212,175,55,.55) !important;
-}
-
-/* Buttons (sidebar / clear chat) */
-.stButton>button{
-  width: 100%;
-  background: linear-gradient(90deg, rgba(212,175,55,.22), rgba(130,90,255,.18));
-  border: 1px solid rgba(212,175,55,.35);
-  color: var(--text);
-  border-radius: 14px;
-  padding: .55rem .8rem;
-  box-shadow: 0 12px 40px rgba(0,0,0,.35);
-}
-
-.stButton>button:hover{
-  border: 1px solid rgba(212,175,55,.60);
-  transform: translateY(-1px);
-}
-
-/* Sidebar styling */
-section[data-testid="stSidebar"]{
-  background: linear-gradient(180deg, rgba(8,10,16,.92), rgba(10,14,24,.85));
-  border-right: 1px solid rgba(212,175,55,.20);
-}
-
-section[data-testid="stSidebar"] *{
-  color: var(--text) !important;
-}
-
-.small-muted{
-  color: var(--muted);
-  font-size: 0.92rem;
-}
-
-/* Code blocks */
-pre{
-  border: 1px solid rgba(212,175,55,.18) !important;
-  border-radius: 14px !important;
-  background: rgba(10,14,24,.75) !important;
-}
-
-/* Links */
-a{
-  color: var(--gold2) !important;
-}
+    /* Custom Input */
+    .stChatInputContainer textarea {
+        background: rgba(255, 255, 255, 0.05) !important;
+        border: 1px solid var(--glass-border) !important;
+        color: white !important;
+    }
+    
+    /* Buttons */
+    .stButton>button {
+        border-radius: 10px;
+        background: linear-gradient(45deg, #00f2fe, #4facfe);
+        color: black;
+        font-weight: 700;
+        border: none;
+        transition: 0.3s;
+    }
+    .stButton>button:hover {
+        transform: scale(1.02);
+        box-shadow: 0 0 15px rgba(0, 242, 254, 0.4);
+    }
 </style>
 """,
     unsafe_allow_html=True,
 )
 
 # ----------------------------
-# HEADER UI
+# LOGIC & DATA
 # ----------------------------
-st.markdown('<div class="royal-title">👑 Royal C++ Chatbot</div>', unsafe_allow_html=True)
-st.markdown(
-    '<div class="royal-subtitle">Ask any question about your <b>C++ Introduction</b> notes. '
-    'This bot retrieves the most relevant sections from your file.</div>',
-    unsafe_allow_html=True
-)
-st.markdown('<div class="royal-divider"></div>', unsafe_allow_html=True)
-
 load_dotenv()
+FILE_PATH = "C++_Introduction.txt"
 
-FILE_PATH = "C++_Introduction.txt"  # keep in same folder as this .py
-
-# ----------------------------
-# VECTOR STORE BUILD
-# ----------------------------
 @st.cache_resource
 def build_vectorstore():
-    # 1) Load text
     loader = TextLoader(FILE_PATH, encoding="utf-8")
     documents = loader.load()
-
-    # 2) Split
     splitter = RecursiveCharacterTextSplitter(chunk_size=900, chunk_overlap=180)
     chunks = splitter.split_documents(documents)
+    embeddings = HuggingFaceEmbeddings(model_name="all-miniLM-L6-v2")
+    return FAISS.from_documents(chunks, embeddings)
 
-    # 3) Embeddings
-    embeddings = HuggingFaceEmbeddings(
-        model_name="all-miniLM-L6-v2"
-    )
-
-    # 4) FAISS
-    vectorstore = FAISS.from_documents(chunks, embeddings)
-    return vectorstore
-
-# Safety check
 if not os.path.exists(FILE_PATH):
-    st.error(f"File not found: **{FILE_PATH}**. Put it in the same folder as this app.")
+    st.error(f"🚨 Missing knowledge file: {FILE_PATH}")
     st.stop()
 
 vectorstore = build_vectorstore()
-retriever = vectorstore.as_retriever(search_kwargs={"k": 3})
 
 # ----------------------------
-# SIDEBAR (ROYAL INFO PANEL)
+# HEADER UI
+# ----------------------------
+with st.container():
+    st.markdown('<span class="status-tag">● SYSTEM ACTIVE</span>', unsafe_allow_html=True)
+    st.markdown('<div class="nexus-title">C++ NEXUS AI</div>', unsafe_allow_html=True)
+    st.markdown('<p style="color: #94a3b8; font-size: 1.1rem;">Instant documentation retrieval for C++ Core Concepts.</p>', unsafe_allow_html=True)
+
+# ----------------------------
+# SIDEBAR
 # ----------------------------
 with st.sidebar:
-    st.markdown("## 👑 Control Panel")
-    st.markdown('<div class="small-muted">Royal theme • Fast local retrieval • No LLM used</div>', unsafe_allow_html=True)
-    st.markdown('<div class="royal-divider"></div>', unsafe_allow_html=True)
-
-    st.markdown("### 📄 Knowledge Source")
-    st.write(FILE_PATH)
-
-    st.markdown("### 🧠 Retrieval Settings")
-    k = st.slider("Top K chunks", min_value=1, max_value=8, value=3, step=1)
-    retriever.search_kwargs = {"k": k}
-
-    show_sources = st.toggle("Show sources (chunks)", value=True)
-
-    st.markdown('<div class="royal-divider"></div>', unsafe_allow_html=True)
-
-    if st.button("🧹 Clear Chat"):
+    st.image("https://cdn-icons-png.flaticon.com/512/6132/6132222.png", width=80)
+    st.markdown("### 🛠 Configuration")
+    
+    k_val = st.slider("Context Density (K)", 1, 10, 3)
+    show_sources = st.checkbox("Show Reference Chunks", value=True)
+    
+    st.markdown("---")
+    st.markdown("### 📁 Active File")
+    st.info(f"`{FILE_PATH}`")
+    
+    if st.button("Clear Neural Links (Reset)"):
         st.session_state.messages = []
         st.rerun()
 
 # ----------------------------
-# CHAT STATE
+# CHAT INTERFACE
 # ----------------------------
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# Display previous messages
-for msg in st.session_state.messages:
-    with st.chat_message(msg["role"]):
-        st.markdown(msg["content"])
+# Layout for chat and info
+col1, col2 = st.columns([2, 1])
 
-# ----------------------------
-# CHAT INPUT
-# ----------------------------
-user_query = st.chat_input("Type your C++ question… (e.g., What is OOP in C++?)")
+with col1:
+    # Message Display
+    for msg in st.session_state.messages:
+        with st.chat_message(msg["role"]):
+            st.markdown(msg["content"])
 
-if user_query:
-    # Save & show user message
-    st.session_state.messages.append({"role": "user", "content": user_query})
-    with st.chat_message("user"):
-        st.markdown(user_query)
+    # Input
+    user_query = st.chat_input("Ask about Classes, Pointers, or Memory Management...")
 
-    # Retrieve docs (new LangChain method)
-    docs = retriever.invoke(user_query)
+    if user_query:
+        st.session_state.messages.append({"role": "user", "content": user_query})
+        with st.chat_message("user"):
+            st.markdown(user_query)
 
-    # Build response
-    if not docs:
-        answer = "I couldn't find anything relevant in your notes. Try rephrasing your question."
-    else:
-        # Simple "answer" as extracted content (retrieval-based)
-        extracted = "\n\n".join([d.page_content.strip() for d in docs])
-        answer = f"Here’s what I found in your notes:\n\n{extracted}"
+        # Retrieval Logic
+        retriever = vectorstore.as_retriever(search_kwargs={"k": k_val})
+        docs = retriever.invoke(user_query)
 
-        if show_sources:
-            meta = "\n".join(
-                [f"- Source {i+1}: page={d.metadata.get('page', 'N/A')}, file={d.metadata.get('source', FILE_PATH)}"
-                 for i, d in enumerate(docs)]
-            )
-            answer += "\n\n---\n**Sources:**\n" + meta
+        if not docs:
+            answer = "⚠️ No matching data found in the local C++ Nexus."
+        else:
+            extracted = "\n\n".join([f"🔹 {d.page_content.strip()}" for d in docs])
+            answer = f"**Retrieval Success:**\n\n{extracted}"
+            
+            if show_sources:
+                sources_text = "\n".join([f"- Fragment from: `{d.metadata.get('source')}`" for d in docs])
+                answer += f"\n\n---\n**Data Sources:**\n{sources_text}"
 
-    # Save & show assistant response
-    st.session_state.messages.append({"role": "assistant", "content": answer})
-    with st.chat_message("assistant"):
-        st.markdown(answer)
+        st.session_state.messages.append({"role": "assistant", "content": answer})
+        with st.chat_message("assistant"):
+            st.markdown(answer)
 
-# Footer note
-st.markdown('<div class="royal-divider"></div>', unsafe_allow_html=True)
-st.caption("Tip: This version is retrieval-only. If you want *real AI answers*, tell me if you want Gemini / OpenAI / Ollama integration.")
+with col2:
+    st.markdown("""
+    <div class="nexus-card">
+        <h4>⚡ Quick Tips</h4>
+        <ul style="font-size: 0.9rem; color: #94a3b8;">
+            <li>Ask specific questions like "How do destructors work?"</li>
+            <li>Use the slider to get more or less detail.</li>
+            <li>This tool is <b>offline-first</b> (No LLM).</li>
+        </ul>
+    </div>
+    """, unsafe_allow_html=True)
